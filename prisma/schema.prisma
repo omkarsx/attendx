@@ -1,0 +1,461 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum CourseType {
+  BSC
+  PCC
+  PEC
+  MMC
+  IOC
+  HSSM
+  VSC
+  LC
+  DSH
+  DSH_LAB
+  NPTEL
+  AUDIT_COURSE
+  OTHER
+}
+
+enum CourseGroupType {
+  PEC
+  OTHER
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum TimetableEntryType {
+  THEORY
+  PRACTICAL
+  LAB
+  TUTORIAL
+  AUDIT_COURSE
+  LIBRARY
+  NPTEL
+  OTHER
+}
+
+enum RoomType {
+  CLASSROOM
+  LABORATORY
+  TUTORIAL_ROOM
+  LIBRARY
+  AUDITORIUM
+  OTHER
+}
+
+enum AttendanceSessionStatus {
+  ACTIVE
+  CLOSED
+  EXPIRED
+  CANCELLED
+}
+
+enum AttendanceRecordStatus {
+  PRESENT
+  ABSENT
+}
+
+enum VerificationStatus {
+  VERIFIED
+  SUSPICIOUS
+  MANUAL
+}
+
+enum AttendanceAttemptResult {
+  SUCCESS
+  INVALID_TOKEN
+  EXPIRED
+  WRONG_CLASS
+  WRONG_BATCH
+  DUPLICATE
+  LOCATION_FAILED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student   Student?
+  teacher   Teacher?
+  auditLogs AuditLog[]
+}
+
+model Student {
+  id         String   @id @default(cuid())
+  userId     String?  @unique
+  prn        String   @unique
+  rollNumber String
+  fullName   String
+  divisionId String
+  batchId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user             User?                    @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  division         Division                 @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch            Batch                    @relation(fields: [batchId, divisionId], references: [id, divisionId], onDelete: Restrict, onUpdate: Cascade)
+  attendanceRecords AttendanceRecord[]
+  attendanceAttempts AttendanceAttempt[]
+  courseSelections  StudentCourseSelection[]
+
+  @@unique([divisionId, rollNumber])
+  @@index([divisionId])
+  @@index([batchId])
+  @@index([prn])
+}
+
+model Teacher {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  employeeCode String?  @unique
+  fullName     String
+  departmentId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user               User?               @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  department         Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  courseFaculty      CourseFaculty[]
+  timetableEntries   TimetableEntry[]
+  attendanceSessions AttendanceSession[]
+
+  @@index([departmentId])
+}
+
+model Department {
+  id   String @id @default(cuid())
+  name String
+  code String @unique
+
+  programs Program[]
+  teachers Teacher[]
+  courses  Course[]
+}
+
+model Program {
+  id           String @id @default(cuid())
+  name         String
+  code         String
+  departmentId String
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  semesters  Semester[]
+  classes    Class[]
+
+  @@unique([departmentId, code])
+  @@index([code])
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  isActive  Boolean  @default(false)
+
+  semesters Semester[]
+}
+
+model Semester {
+  id             String   @id @default(cuid())
+  number         Int
+  name           String
+  academicYearId String
+  programId      String
+
+  academicYear    AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  program         Program         @relation(fields: [programId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  classes         Class[]
+  courseGroups    CourseGroup[]
+  courseFaculty   CourseFaculty[]
+  timetableEntries TimetableEntry[]
+
+  @@unique([academicYearId, programId, number])
+  @@index([academicYearId])
+  @@index([programId])
+}
+
+model Class {
+  id         String @id @default(cuid())
+  name       String
+  programId  String
+  semesterId String
+
+  program   Program   @relation(fields: [programId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  semester  Semester  @relation(fields: [semesterId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  divisions Division[]
+
+  @@unique([programId, semesterId, name])
+  @@index([semesterId])
+}
+
+model Division {
+  id      String @id @default(cuid())
+  name    String
+  classId String
+
+  class            Class            @relation(fields: [classId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batches          Batch[]
+  students         Student[]
+  courseFaculty    CourseFaculty[]
+  timetableEntries TimetableEntry[]
+
+  @@unique([classId, name])
+  @@index([classId])
+}
+
+model Batch {
+  id         String @id @default(cuid())
+  name       String
+  divisionId String
+
+  division         Division         @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  students         Student[]
+  courseFaculty    CourseFaculty[]
+  timetableEntries TimetableEntry[]
+
+  @@unique([divisionId, name])
+  @@unique([id, divisionId])
+  @@index([divisionId])
+}
+
+model Course {
+  id           String     @id @default(cuid())
+  code         String
+  name         String
+  courseType   CourseType
+  credits      Decimal    @db.Decimal(4, 2)
+  departmentId String
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  department         Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  courseGroupCourses CourseGroupCourse[]
+  courseFaculty      CourseFaculty[]
+  timetableEntries   TimetableEntry[]
+
+  @@unique([departmentId, code])
+  @@index([code])
+  @@index([departmentId])
+}
+
+model CourseGroup {
+  id         String     @id @default(cuid())
+  name       String
+  type       CourseGroupType
+  semesterId String
+
+  semester     Semester            @relation(fields: [semesterId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  courseLinks  CourseGroupCourse[]
+
+  @@unique([semesterId, name])
+  @@index([semesterId])
+}
+
+model CourseGroupCourse {
+  courseGroupId String
+  courseId      String
+  createdAt     DateTime @default(now())
+
+  courseGroup       CourseGroup              @relation(fields: [courseGroupId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  course            Course                   @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  studentSelections StudentCourseSelection[]
+
+  @@id([courseGroupId, courseId])
+  @@index([courseId])
+}
+
+// Records a student's selected member of a selectable course group. The
+// composite relation guarantees that the selected course belongs to the group.
+model StudentCourseSelection {
+  id            String   @id @default(cuid())
+  studentId     String
+  courseGroupId String
+  courseId      String
+  selectedAt    DateTime @default(now())
+
+  student          Student           @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  courseGroupCourse CourseGroupCourse @relation(fields: [courseGroupId, courseId], references: [courseGroupId, courseId], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([studentId, courseGroupId])
+  @@index([courseId])
+}
+
+model CourseFaculty {
+  id         String  @id @default(cuid())
+  courseId   String
+  teacherId  String
+  semesterId String
+  divisionId String
+  batchId    String?
+  // Generated only by trusted server code; future APIs must not accept an
+  // arbitrary value. Use "DIVISION" for division-wide assignments, or the
+  // batch ID for batch-specific assignments. This makes optional-batch
+  // assignment uniqueness reliable in PostgreSQL, where NULLs are distinct.
+  scopeKey String @default("DIVISION")
+
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher  Teacher  @relation(fields: [teacherId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  semester Semester @relation(fields: [semesterId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  division Division @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch    Batch?   @relation(fields: [batchId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([courseId, teacherId, semesterId, divisionId, scopeKey])
+  @@index([semesterId])
+  @@index([divisionId])
+  @@index([batchId])
+  @@index([teacherId])
+}
+
+model Room {
+  id         String   @id @default(cuid())
+  roomNumber String
+  building   String
+  capacity   Int?
+  type       RoomType
+
+  timetableEntries TimetableEntry[]
+
+  @@unique([building, roomNumber])
+}
+
+model TimetableEntry {
+  id         String             @id @default(cuid())
+  semesterId String
+  divisionId String
+  courseId   String
+  teacherId  String
+  batchId    String?
+  roomId     String
+  dayOfWeek  DayOfWeek
+  // Native PostgreSQL TIME values represent recurring local timetable times
+  // without inventing a date or applying a timezone conversion.
+  startTime  DateTime           @db.Time(0)
+  endTime    DateTime           @db.Time(0)
+  entryType  TimetableEntryType
+  isActive   Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  semester           Semester            @relation(fields: [semesterId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  division           Division            @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  course             Course              @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher            Teacher             @relation(fields: [teacherId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  batch              Batch?              @relation(fields: [batchId, divisionId], references: [id, divisionId], onDelete: Restrict, onUpdate: Cascade)
+  room               Room                @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  attendanceSessions AttendanceSession[]
+
+  @@index([semesterId])
+  @@index([divisionId])
+  @@index([teacherId])
+  @@index([dayOfWeek])
+  @@index([semesterId, divisionId, dayOfWeek])
+  @@index([batchId])
+  @@index([roomId])
+}
+
+model AttendanceSession {
+  id               String                  @id @default(cuid())
+  timetableEntryId String
+  teacherId        String
+  date             DateTime                @db.Date
+  // Actual time attendance was opened; TimetableEntry.startTime is the
+  // scheduled recurring timetable time.
+  startsAt         DateTime                @default(now())
+  expiresAt        DateTime
+  status           AttendanceSessionStatus @default(ACTIVE)
+  qrTokenHash      String
+  closedAt         DateTime?
+  createdAt        DateTime                @default(now())
+
+  timetableEntry TimetableEntry      @relation(fields: [timetableEntryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher        Teacher             @relation(fields: [teacherId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  records        AttendanceRecord[]
+  attempts       AttendanceAttempt[]
+
+  @@unique([timetableEntryId, date])
+  @@index([date])
+  @@index([timetableEntryId])
+  @@index([teacherId])
+}
+
+model AttendanceRecord {
+  id                 String                 @id @default(cuid())
+  sessionId          String
+  studentId          String
+  status             AttendanceRecordStatus
+  verificationStatus VerificationStatus
+  markedAt           DateTime               @default(now())
+  verifiedAt         DateTime?
+
+  session AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  student Student           @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([sessionId, studentId])
+  @@index([sessionId])
+  @@index([studentId])
+}
+
+model AttendanceAttempt {
+  id             String                  @id @default(cuid())
+  sessionId      String
+  studentId      String
+  attemptedAt    DateTime                @default(now())
+  result         AttendanceAttemptResult
+  latitude       Decimal?                @db.Decimal(8, 6)
+  longitude      Decimal?                @db.Decimal(9, 6)
+  distanceMeters Decimal?                @db.Decimal(10, 2)
+  ipAddress      String?                 @db.Inet
+  userAgent      String?
+
+  session AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  student Student           @relation(fields: [studentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([sessionId])
+  @@index([studentId])
+  @@index([attemptedAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String
+  action      String
+  entityType  String
+  entityId    String
+  oldValue    Json?    @db.JsonB
+  newValue    Json?    @db.JsonB
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  actorUser User @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}

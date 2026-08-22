@@ -1,4 +1,6 @@
 
+import { AttendXLogo } from "@/components/brand/logo";
+
 interface LoginPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -20,15 +22,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white font-bold text-2xl shadow-md">
-            AX
+      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-slate-200">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <AttendXLogo
+              variant="stacked"
+              showTagline
+              markSize="w-16 h-16"
+              textSize="text-2xl"
+              taglineSize="text-[9px]"
+            />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            AttendX Portal
-          </h1>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 font-medium tracking-wide">
             JSPM University Pune • School of E&amp;CS
           </p>
         </div>

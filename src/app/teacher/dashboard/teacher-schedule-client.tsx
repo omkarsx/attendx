@@ -165,7 +165,7 @@ export function TeacherScheduleClient({ schedule }: TeacherScheduleClientProps) 
 
                       <Link
                         href={`/teacher/session/${item.activeSession?.id}`}
-                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                        className="px-4 py-2.5 bg-[#10B981] hover:bg-emerald-600 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
                       >
                         <span>View QR Code</span>
                       </Link>
@@ -186,7 +186,7 @@ export function TeacherScheduleClient({ schedule }: TeacherScheduleClientProps) 
                       </span>
                       <Link
                         href={`/teacher/session/${item.activeSession?.id}`}
-                        className="text-xs font-semibold text-indigo-600 hover:underline"
+                        className="text-xs font-semibold text-slate-700 hover:text-slate-900 underline"
                       >
                         View Roster
                       </Link>
@@ -196,7 +196,7 @@ export function TeacherScheduleClient({ schedule }: TeacherScheduleClientProps) 
                       type="button"
                       onClick={() => handleStartAttendance(item.timetableEntryId)}
                       disabled={isPending}
-                      className="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                      className="px-5 py-3 bg-[#0F172A] hover:bg-slate-800 disabled:bg-slate-400 text-white font-semibold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
                     >
                       {isPending ? "Starting..." : "Start Attendance"}
                     </button>

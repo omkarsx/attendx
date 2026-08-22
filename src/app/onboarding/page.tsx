@@ -4,10 +4,12 @@ import { getUserClaimStatus } from "@/lib/auth/claims";
 import { UserRole } from "@/generated/prisma/enums";
 import { ClaimForms } from "./claim-forms";
 
+import { AttendXLogo } from "@/components/brand/logo";
+
 export default async function OnboardingPage() {
   const user = await requireAuth();
 
-  // If already linked, redirect immediately
+  // If already linked, redirect to appropriate role dashboard
   if (user.role === UserRole.ADMIN) {
     redirect("/admin/verification");
   } else if (user.teacher) {
@@ -22,14 +24,18 @@ export default async function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-md">
-            AX
-          </div>
+          <AttendXLogo
+            variant="stacked"
+            showTagline
+            markSize="w-14 h-14"
+            textSize="text-xl"
+            taglineSize="text-[9px]"
+          />
         </div>
-        <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="mt-4 text-center text-xl font-bold tracking-tight text-slate-900">
           Account Profile Verification
         </h2>
-        <p className="mt-1 text-center text-sm text-slate-500">
+        <p className="mt-1 text-center text-xs text-slate-500">
           Signed in as <span className="font-semibold text-slate-700">{user.email}</span>
         </p>
       </div>

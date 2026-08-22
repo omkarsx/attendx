@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { prisma } from "@/lib/prisma";
-import { AttendXMark } from "@/components/brand/logo";
 
 export default async function AdminAttendancePage() {
   await requireAdmin();
@@ -57,17 +56,15 @@ export default async function AdminAttendancePage() {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AttendXMark className="w-8 h-8 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-slate-900 text-white font-bold text-base flex items-center justify-center shadow-sm">
+              AX
+            </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-extrabold tracking-[0.14em] text-[#0F172A] leading-none">
-                  ATTEND<span className="text-[#10B981]">X</span>
-                </span>
-                <span className="text-xs font-semibold text-slate-400">|</span>
-                <span className="text-xs font-semibold text-slate-700">Admin Console</span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Attendance Engine &amp; Live Monitoring
+              <h1 className="text-base font-bold text-slate-900 leading-tight">
+                AttendX Administration
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">
+                Attendance Monitoring &amp; Session Audit
               </p>
             </div>
           </div>
@@ -75,13 +72,13 @@ export default async function AdminAttendancePage() {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/verification"
-              className="text-xs font-semibold text-slate-600 hover:text-[#0F172A] px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              className="text-xs font-semibold text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
             >
               Identity Verification
             </Link>
             <Link
               href="/admin/attendance"
-              className="text-xs font-bold text-[#0F172A] bg-slate-100 px-3 py-2 rounded-lg border border-slate-200"
+              className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg"
             >
               Attendance Engine
             </Link>

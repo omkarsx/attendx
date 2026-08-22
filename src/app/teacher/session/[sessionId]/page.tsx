@@ -4,7 +4,6 @@ import { getLiveSessionDetails } from "@/lib/attendance/session";
 import { prisma } from "@/lib/prisma";
 import { generateSignedQrPayload, generateQrDataUrl } from "@/lib/attendance/token";
 import { SessionLiveClient } from "./session-live-client";
-import { AttendXMark } from "@/components/brand/logo";
 
 interface TeacherSessionPageProps {
   params: Promise<{ sessionId: string }>;
@@ -44,16 +43,14 @@ export default async function TeacherSessionPage({
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AttendXMark className="w-8 h-8 shrink-0" />
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-sm">
+              AX
+            </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-extrabold tracking-[0.14em] text-[#0F172A] leading-none">
-                  ATTEND<span className="text-[#10B981]">X</span>
-                </span>
-                <span className="text-xs font-semibold text-slate-400">|</span>
-                <span className="text-xs font-semibold text-slate-700">Live Monitor</span>
-              </div>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <h1 className="text-base font-bold text-slate-900 leading-tight">
+                Live Attendance Monitor
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">
                 {session.courseCode} • {session.courseName}
               </p>
             </div>
